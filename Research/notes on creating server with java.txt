@@ -1,0 +1,5 @@
+Useful links for creating web server in java and embedding tomcat
+
+http://tutorials.jenkov.com/java-multithreaded-servers/multithreaded-server.html
+
+http://www.hascode.com/2013/07/embedding-jetty-or-tomcat-in-your-java-application/
