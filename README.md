@@ -1,5 +1,8 @@
-# Fall2016Swe573_UmurTurkay
-
 ## SWE573 Software Development Practice Project Repository
 
-This is the repository for SWE573 - Software Development Practice course.
+##Health Tracker
+
+Health Tracker is an application to track food consumption and activities. Based on this data it provides the user information about their performance in a given time interval.
+
+
+**Status:** Requirement Elicitation
