@@ -15,7 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
  
-import com.swe.springmvc.converter.RoleToUserProfileConverter;
+import com.swe.springmvc.converter.RoleToUserRoleConverter;
  
  
 @Configuration
@@ -25,9 +25,12 @@ public class AppConfig extends WebMvcConfigurerAdapter{
      
      
     @Autowired
-    RoleToUserProfileConverter roleToUserProfileConverter;
+    RoleToUserRoleConverter roleToUserRoleConverter;
      
  
+    /**
+     * Configure ViewResolvers to deliver preferred views.
+     */
     @Override
     public void configureViewResolvers(ViewResolverRegistry registry) {
  
@@ -39,17 +42,20 @@ public class AppConfig extends WebMvcConfigurerAdapter{
     }
      
     /**
-     * Configure ResourceHandlers to serve static resources like CSS/ Javascript.
+     * Configure ResourceHandlers to serve static resources like CSS/ Javascript etc...
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/static/**").addResourceLocations("/static/");
     }
      
-
+    /**
+     * Configure Converter to be used.
+     * In our example, we need a converter to convert string values[Roles] to UserRoles in newUser.jsp
+     */
     @Override
     public void addFormatters(FormatterRegistry registry) {
-        registry.addConverter(roleToUserProfileConverter);
+        registry.addConverter(roleToUserRoleConverter);
     }
      
  
@@ -62,7 +68,7 @@ public class AppConfig extends WebMvcConfigurerAdapter{
         messageSource.setBasename("messages");
         return messageSource;
     }
-     
+    
     @Override
     public void configurePathMatch(PathMatchConfigurer matcher) {
         matcher.setUseRegisteredSuffixPatternMatch(true);
