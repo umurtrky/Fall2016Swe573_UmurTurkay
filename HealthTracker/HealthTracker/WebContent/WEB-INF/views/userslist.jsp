@@ -24,12 +24,6 @@
                         <th>Lastname</th>
                         <th>Email</th>
                         <th>User name</th>
-                        <sec:authorize access="hasRole('ADMIN') or hasRole('DBA')">
-                            <th width="100"></th>
-                        </sec:authorize>
-                        <sec:authorize access="hasRole('ADMIN')">
-                            <th width="100"></th>
-                        </sec:authorize>
                          
                     </tr>
                 </thead>
@@ -39,23 +33,12 @@
                         <td>${user.firstName}</td>
                         <td>${user.lastName}</td>
                         <td>${user.email}</td>
-                        <td>${user.ssoId}</td>
-                        <sec:authorize access="hasRole('ADMIN') or hasRole('DBA')">
-                            <td><a href="<c:url value='/edit-user-${user.ssoId}' />" class="btn btn-success custom-width">edit</a></td>
-                        </sec:authorize>
-                        <sec:authorize access="hasRole('ADMIN')">
-                            <td><a href="<c:url value='/delete-user-${user.ssoId}' />" class="btn btn-danger custom-width">delete</a></td>
-                        </sec:authorize>
+                        <td>${user.username}</td>
                     </tr>
                 </c:forEach>
                 </tbody>
             </table>
         </div>
-        <sec:authorize access="hasRole('ADMIN')">
-            <div class="well">
-                <a href="<c:url value='/newuser' />">Add New User</a>
-            </div>
-        </sec:authorize>
     </div>
 </body>
 </html>
