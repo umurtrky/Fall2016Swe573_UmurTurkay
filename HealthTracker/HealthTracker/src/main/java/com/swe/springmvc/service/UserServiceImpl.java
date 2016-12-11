@@ -1,6 +1,8 @@
 package com.swe.springmvc.service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
  
 import com.swe.springmvc.dao.UserDao;
 import com.swe.springmvc.model.User;
+import com.swe.springmvc.model.UserRole;
  
  
 @Service("userService")
@@ -25,13 +28,19 @@ public class UserServiceImpl implements UserService{
         return dao.findById(id);
     }
  
-    public User findBySSO(String sso) {
-        User user = dao.findBySSO(sso);
+    public User findByUsername(String username) {
+        User user = dao.findByUsername(username);
         return user;
     }
  
     public void saveUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
+        UserRole ur = new UserRole();
+        ur.setId(1);
+        ur.setType("USER");
+        Set<UserRole> roleSet = new HashSet();
+        roleSet.add(ur);
+        user.setUserRoles(roleSet);
         dao.save(user);
     }
  
@@ -43,28 +52,28 @@ public class UserServiceImpl implements UserService{
     public void updateUser(User user) {
         User entity = dao.findById(user.getId());
         if(entity!=null){
-            entity.setSsoId(user.getSsoId());
+            entity.setUsername(user.getUsername());
             if(!user.getPassword().equals(entity.getPassword())){
                 entity.setPassword(passwordEncoder.encode(user.getPassword()));
             }
             entity.setFirstName(user.getFirstName());
             entity.setLastName(user.getLastName());
             entity.setEmail(user.getEmail());
-            entity.setUserRoles(user.getUserRoles());
+            //entity.setUserRoles(user.getUserRoles());
         }
     }
  
      
-    public void deleteUserBySSO(String sso) {
-        dao.deleteBySSO(sso);
+    public void deleteUserByUsername(String username) {
+        dao.deleteByUsername(username);
     }
  
     public List<User> findAllUsers() {
         return dao.findAllUsers();
     }
  
-    public boolean isUserSSOUnique(Integer id, String sso) {
-        User user = findBySSO(sso);
+    public boolean isUserUsernameUnique(Integer id, String username) {
+        User user = findByUsername(username);
         return ( user == null || ((id != null) && (user.getId() == id)));
     }
      
