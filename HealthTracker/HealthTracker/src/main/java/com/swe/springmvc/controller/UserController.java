@@ -1,5 +1,7 @@
 package com.swe.springmvc.controller;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
  
@@ -8,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
  
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.context.MessageSource;
 import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.core.Authentication;
@@ -18,6 +21,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,7 +38,6 @@ import com.swe.springmvc.service.UserService;
  
 @Controller
 @RequestMapping("/")
-@SessionAttributes("roles")
 public class UserController {
  
     @Autowired
@@ -55,7 +59,7 @@ public class UserController {
     /**
      * This method will list all existing users.
      */
-    @RequestMapping(value = { "/", "/list" }, method = RequestMethod.GET)
+    @RequestMapping(value = { "/list" }, method = RequestMethod.GET)
     public String listUsers(ModelMap model) {
  
         List<User> users = userService.findAllUsers();
@@ -64,27 +68,27 @@ public class UserController {
         return "userslist";
     }
  
-    @RequestMapping(value = { "/newuser" }, method = RequestMethod.GET)
+    @RequestMapping(value = { "/registration" }, method = RequestMethod.GET)
     public String newUser(ModelMap model) {
         User user = new User();
         model.addAttribute("user", user);
         model.addAttribute("edit", false);
-        model.addAttribute("loggedinuser", getPrincipal());
+        //model.addAttribute("loggedinuser", getPrincipal());
         return "registration";
     }
  
     /**
      * saving user in database. It also validates the user input
      */
-    @RequestMapping(value = { "/newuser" }, method = RequestMethod.POST)
+    @RequestMapping(value = { "/registration" }, method = RequestMethod.POST)
     public String saveUser(@Valid User user, BindingResult result,
             ModelMap model) {
  
         if (result.hasErrors()) {
             return "registration";
         }
-        if(!userService.isUserSSOUnique(user.getId(), user.getSsoId())){
-            FieldError ssoError =new FieldError("user","ssoId",messageSource.getMessage("non.unique.ssoId", new String[]{user.getSsoId()}, Locale.getDefault()));
+        if(!userService.isUserUsernameUnique(user.getId(), user.getUsername())){
+            FieldError ssoError =new FieldError("user","ssoId",messageSource.getMessage("non.unique.username", new String[]{user.getUsername()}, Locale.getDefault()));
             result.addError(ssoError);
             return "registration";
         }
@@ -92,14 +96,14 @@ public class UserController {
         userService.saveUser(user);
  
         model.addAttribute("success", "User " + user.getFirstName() + " "+ user.getLastName() + " registered successfully");
-        model.addAttribute("loggedinuser", getPrincipal());
+        //model.addAttribute("loggedinuser", getPrincipal());
         //return "success";
         return "registrationsuccess";
     }
  
     @RequestMapping(value = { "/edit-user-{ssoId}" }, method = RequestMethod.GET)
     public String editUser(@PathVariable String ssoId, ModelMap model) {
-        User user = userService.findBySSO(ssoId);
+        User user = userService.findByUsername(ssoId);
         model.addAttribute("user", user);
         model.addAttribute("edit", true);
         model.addAttribute("loggedinuser", getPrincipal());
@@ -129,11 +133,10 @@ public class UserController {
      */
     @RequestMapping(value = { "/delete-user-{ssoId}" }, method = RequestMethod.GET)
     public String deleteUser(@PathVariable String ssoId) {
-        userService.deleteUserBySSO(ssoId);
+        userService.deleteUserByUsername(ssoId);
         return "redirect:/list";
     }
      
-    @ModelAttribute("roles")
     public List<UserRole> initializeRoles() {
         return userRoleService.findAll();
     }
@@ -147,8 +150,10 @@ public class UserController {
     /**
      * If users is already logged-in and tries to goto login page again, will be redirected to list page.
      */
-    @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public String loginPage() {
+    @RequestMapping(value = { "/", "/login" }, method = RequestMethod.GET)
+    public String loginPage(@ModelAttribute("user") @Valid User user, BindingResult result, ModelMap model) {
+    	List<User> users = userService.findAllUsers();
+        model.addAttribute("users", users);
         if (isCurrentAuthenticationAnonymous()) {
             return "login";
         } else {
@@ -193,5 +198,11 @@ public class UserController {
         return authenticationTrustResolver.isAnonymous(authentication);
     }
  
+  @InitBinder
+  public void initBinder(WebDataBinder binder) {
+      SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+      sdf.setLenient(true);
+      binder.registerCustomEditor(Date.class, new CustomDateEditor(sdf, true));
+  }
  
 }
